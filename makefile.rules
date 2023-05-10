@@ -1,0 +1,122 @@
+##############################################################
+#
+# This file includes all the test targets as well as all the
+# non-default build rules and test recipes.
+#
+##############################################################
+
+
+##############################################################
+#
+# Test targets
+#
+##############################################################
+
+###### Place all generic definitions here ######
+
+# This defines tests which run tools of the same name.  This is simply for convenience to avoid
+# defining the test name twice (once in TOOL_ROOTS and again in TEST_ROOTS).
+# Tests defined here should not be defined in TOOL_ROOTS and TEST_ROOTS.
+TEST_TOOL_ROOTS := taint
+
+# This defines the tests to be run that were not already defined in TEST_TOOL_ROOTS.
+TEST_ROOTS :=
+
+# This defines the tools which will be run during the the tests, and were not already defined in
+# TEST_TOOL_ROOTS.
+TOOL_ROOTS :=
+
+# This defines the static analysis tools which will be run during the the tests. They should not
+# be defined in TEST_TOOL_ROOTS. If a test with the same name exists, it should be defined in
+# TEST_ROOTS.
+# Note: Static analysis tools are in fact executables linked with the Pin Static Analysis Library.
+# This library provides a subset of the Pin APIs which allows the tool to perform static analysis
+# of an application or dll. Pin itself is not used when this tool runs.
+SA_TOOL_ROOTS :=
+
+# This defines all the applications that will be run during the tests.
+APP_ROOTS :=
+
+# This defines any additional object files that need to be compiled.
+OBJECT_ROOTS :=
+
+# This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
+DLL_ROOTS :=
+
+# This defines any static libraries (archives), that need to be built.
+LIB_ROOTS :=
+
+###### Define the sanity subset ######
+
+# This defines the list of tests that should run in sanity. It should include all the tests listed in
+# TEST_TOOL_ROOTS and TEST_ROOTS excluding only unstable tests.
+SANITY_SUBSET := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
+
+
+##############################################################
+#
+# Test recipes
+#
+##############################################################
+
+# This section contains recipes for tests other than the default.
+# See makefile.default.rules for the default test rules.
+# All tests in this section should adhere to the naming convention: <testname>.test
+
+
+##############################################################
+#
+# Build rules
+#
+##############################################################
+
+# This section contains the build rules for all binaries that have special build rules.
+# See makefile.default.rules for the default build rules.
+
+$(OBJDIR)taint$(OBJ_SUFFIX): src/taint.cpp
+	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# global
+$(OBJDIR)global$(OBJ_SUFFIX): src/global.cpp src/global.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# instruction
+$(OBJDIR)instruction$(OBJ_SUFFIX): src/instruction.cpp src/instruction.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# read syscall handler
+$(OBJDIR)readsyscall$(OBJ_SUFFIX): src/readsyscall.cpp src/readsyscall.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# memory operation handler
+$(OBJDIR)memop$(OBJ_SUFFIX): src/memop.cpp src/memop.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# register operation handler
+$(OBJDIR)regop$(OBJ_SUFFIX): src/regop.cpp src/regop.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# control flow handler
+$(OBJDIR)ctlflow$(OBJ_SUFFIX): src/ctlflow.cpp src/ctlflow.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+# image
+$(OBJDIR)image$(OBJ_SUFFIX): src/image.cpp src/image.h
+	$(CC) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
+
+GLOBAL_FILES = $(OBJDIR)global$(OBJ_SUFFIX) src/global.h
+INSTRUCTION_FILES = $(OBJDIR)instruction$(OBJ_SUFFIX) src/instruction.h
+READ_SYSCALL_FILES = $(OBJDIR)readsyscall$(OBJ_SUFFIX) src/readsyscall.h
+MEMORY_OPERATION_FILES = $(OBJDIR)memop$(OBJ_SUFFIX) src/memop.h
+REGISTER_OPERATION_FILES = $(OBJDIR)regop$(OBJ_SUFFIX) src/regop.h
+CONTROL_FLOW_FILES = $(OBJDIR)ctlflow$(OBJ_SUFFIX) src/ctlflow.h
+IMAGE_FILES = $(OBJDIR)image$(OBJ_SUFFIX) src/image.h
+
+OUTDIR = out/
+
+DEPENDENCIES = $(GLOBAL_FILES) $(INSTRUCTION_FILES) $(READ_SYSCALL_FILES) $(MEMORY_OPERATION_FILES) $(REGISTER_OPERATION_FILES) $(CONTROL_FLOW_FILES) $(IMAGE_FILES)
+# Build the tool as a dll (shared object).
+$(OBJDIR)taint$(PINTOOL_SUFFIX): $(OBJDIR)taint$(OBJ_SUFFIX) $(DEPENDENCIES)
+	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) $(TOOL_LIBS)
+	mkdir $(OUTDIR)
+	cp $(OBJDIR)taint$(PINTOOL_SUFFIX) $(OUTDIR)taint$(PINTOOL_SUFFIX)

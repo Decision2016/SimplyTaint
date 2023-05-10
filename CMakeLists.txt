@@ -1,9 +1,6 @@
-cmake_minimum_required(VERSION 3.24)
-project(SimplyTaint)
+cmake_minimum_required(VERSION 3.15)
+project(icount)
 
-set(CMAKE_CXX_STANDARD 17)
-
-#add_executable(SimplyTaint main.cpp)
 # Enable solution folder support
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -12,4 +9,6 @@ include(cmake/CPM.cmake)
 include(cmake/IntelPIN.cmake)
 
 # Instruction counter example
-add_pintool(SimplyTaint main.cpp)
+add_pintool(icount
+        ${PIN_DIR}/source/tools/InstLibExamples/icount.cpp
+        )
